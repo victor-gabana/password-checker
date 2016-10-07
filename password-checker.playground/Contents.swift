@@ -3,6 +3,8 @@
 // but i looked at this http://www.passwordmeter.com/
 // helpful too -> http://passwordsgenerator.net/
 
+// Bonus Points: pass recommendation back to user on how to improve their password
+
 import Cocoa
 import XCTest
 
