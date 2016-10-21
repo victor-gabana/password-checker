@@ -16,7 +16,10 @@ enum Strength: Int {
 
 func checkPassword(proposed: String) -> Strength {
     
-    return PasswordStrengthBuilder(proposed).isLongEnough(limit: 12).build()
+    return PasswordStrengthBuilder(proposed)
+        .isLongEnough(limit: 12)
+        .hasNumber()
+        .build()
 }
 
 class PasswordStrengthBuilder{
@@ -34,7 +37,16 @@ class PasswordStrengthBuilder{
         if password.characters.count >= limit {
             return PasswordStrengthBuilder(password, strength: Strength(rawValue: strength.rawValue + 1)!) //hate!!
         } else {
-            return PasswordStrengthBuilder(password, strength: strength)
+            return self
+        }
+    }
+    
+    func hasNumber() -> PasswordStrengthBuilder {
+        
+        if (password.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil) {
+            return PasswordStrengthBuilder(password, strength: Strength(rawValue: strength.rawValue + 1)!)
+        } else {
+            return self
         }
     }
     
@@ -43,6 +55,12 @@ class PasswordStrengthBuilder{
     }
 }
 
+
+XCTAssertGreaterThan(checkPassword(proposed: "1q2w3ljkdfdlgji").rawValue, Strength.Weak.rawValue)
+XCTAssertGreaterThan(checkPassword(proposed: "1q2w3").rawValue, Strength.Feeble.rawValue)
+//XCTAssertEqual(Strength.Feeble, checkPassword(proposed: "password"))
+//XCTAssertEqual(Strength.Robust, checkPassword(proposed: "Vf(rB!K&Kh^9sU{U"))
+
 // initial state of builder should be feeble
 let psb = PasswordStrengthBuilder("")
 XCTAssertEqual(Strength.Feeble, psb.build())
@@ -50,7 +68,3 @@ XCTAssertEqual(Strength.Feeble, psb.build())
 // can set my builder up
 let robustPSB = PasswordStrengthBuilder("", strength: .Robust)
 XCTAssertEqual(Strength.Robust, robustPSB.build())
-
-XCTAssertGreaterThan(checkPassword(proposed: "1q2w3"), Strength.Feeble)
-//XCTAssertEqual(Strength.Feeble, checkPassword(proposed: "password"))
-//XCTAssertEqual(Strength.Robust, checkPassword(proposed: "Vf(rB!K&Kh^9sU{U"))
