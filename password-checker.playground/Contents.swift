@@ -14,6 +14,9 @@ enum Strength: Int {
     case Robust
 }
 
+// TODO: Use builder pattern
+// Book: Swift 3 Funtional Programming
+
 struct StrengthMatches : OptionSet {
     let rawValue: Int
     
@@ -87,9 +90,9 @@ func isPasswordLongEnough(_ password: String, limit: Int) -> Bool {
 }
 
 func containsSymbol(_ password: String) -> Bool {
-    let symbols = CharacterSet.alphanumerics
+    let alphanumerics = CharacterSet.alphanumerics
     
-    return password.rangeOfCharacter(from: symbols.inverted) != nil
+    return password.rangeOfCharacter(from: alphanumerics.inverted) != nil
 }
 
 func contains(_  characterSet: CharacterSet, password: String) -> Bool {
@@ -146,5 +149,5 @@ XCTAssertNotEqual(StrengthMatches.length, checkPasswordStrengthAndMatches(propos
 
 
 ///
-checkPassword("test")
+checkPassword("test1")
 ///
