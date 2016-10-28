@@ -14,9 +14,6 @@ enum Strength: Int {
     case Robust
 }
 
-// TODO: Use builder pattern
-// Book: Swift 3 Funtional Programming
-
 struct StrengthMatches : OptionSet {
     let rawValue: Int
     
@@ -25,6 +22,98 @@ struct StrengthMatches : OptionSet {
     static let uppercase  = StrengthMatches(rawValue: 1 << 2)
     static let number  = StrengthMatches(rawValue: 1 << 3)
 }
+
+// Book: Swift 3 Funtional Programming
+
+
+
+func checkPasswordWithBuilder(_ password:String) {
+    
+    let minimumLenght = 12
+    let passwordAnalysis = PasswordCheckerBuilder(password, initialStrength: .Feeble, initialStrengthMatch: []).isPasswordLongEnough(limit: minimumLenght).containsSymbol().containsUppercase().containsNumber().build()
+    
+    print("The strenght of your password '\(password)' is: \(passwordAnalysis.strength)")
+    
+    if passwordAnalysis.strength == .Robust {
+        print("CONGRATS!! 🎉🎉🎉")
+    } else {
+        print("To have a secure password please improve the following:")
+        
+        if !passwordAnalysis.matches.contains(.length) {
+            print("   + Make your password \(minimumLenght) characters long.")
+        }
+        if !passwordAnalysis.matches.contains(.symbol) {
+            print("   + Make your password contains at least 1 symbol.")
+        }
+        if !passwordAnalysis.matches.contains(.uppercase) {
+            print("   + Make your password contains at least 1 uppercase letter.")
+        }
+        if !passwordAnalysis.matches.contains(.number) {
+            print("   + Make your password contains at least 1 symbol.")
+        }
+    }
+}
+
+class PasswordCheckerBuilder
+{
+    let password: String
+    
+    var strength : Strength = .Feeble;
+    var strengthMatch: StrengthMatches = []
+    
+    init(_ proposedPassword: String, initialStrength: Strength, initialStrengthMatch: StrengthMatches) {
+        password = proposedPassword
+        strength = initialStrength
+        strengthMatch = initialStrengthMatch
+    }
+    
+    func isPasswordLongEnough(limit: Int) -> PasswordCheckerBuilder {
+        if password.characters.count >= limit {
+            strengthMatch.insert(.length)
+            strength = Strength(rawValue: strength.rawValue + 1)!
+        }
+        return self
+    }
+    
+    func containsSymbol() -> PasswordCheckerBuilder {
+        let alphanumerics = CharacterSet.alphanumerics
+        
+        if password.rangeOfCharacter(from: alphanumerics.inverted) != nil {
+            strengthMatch.insert(.symbol)
+            strength = Strength(rawValue: strength.rawValue + 1)!
+        }
+        return self
+    }
+    
+    func containsUppercase() -> PasswordCheckerBuilder {
+        if password.rangeOfCharacter(from: CharacterSet.uppercaseLetters) != nil {
+            strengthMatch.insert(.uppercase)
+            strength = Strength(rawValue: strength.rawValue + 1)!
+        }
+        return self
+    }
+    
+    func containsNumber() -> PasswordCheckerBuilder {
+        if password.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil {
+            strengthMatch.insert(.number)
+            strength = Strength(rawValue: strength.rawValue + 1)!
+        }
+        return self
+    }
+    
+    func build() -> (strength : Strength, matches : StrengthMatches) {
+        return(strength, strengthMatch)
+    }
+}
+
+
+checkPasswordWithBuilder("test1")
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 let minimumLenght = 12;
 
@@ -100,6 +189,11 @@ func contains(_  characterSet: CharacterSet, password: String) -> Bool {
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////// TESTING /////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 // MARK: Test isPasswordLongEnough
 XCTAssertTrue(isPasswordLongEnough("1234", limit: 2))
 XCTAssertFalse(isPasswordLongEnough("1234", limit: 5))
@@ -149,5 +243,5 @@ XCTAssertNotEqual(StrengthMatches.length, checkPasswordStrengthAndMatches(propos
 
 
 ///
-checkPassword("test1")
+//checkPassword("test1")
 ///
