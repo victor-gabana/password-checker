@@ -30,7 +30,12 @@ struct StrengthMatches : OptionSet {
 func checkPasswordWithBuilder(_ password:String) {
     
     let minimumLenght = 12
-    let passwordAnalysis = PasswordCheckerBuilder(password, initialStrength: .Feeble, initialStrengthMatch: []).isPasswordLongEnough(limit: minimumLenght).containsSymbol().containsUppercase().containsNumber().build()
+    
+    let passwordAnalysis = PasswordCheckerBuilder(password, initialStrength: .Feeble, initialStrengthMatch: [])
+        .isPasswordLongEnough(limit: minimumLenght, strengthMatch: .length)
+        .contains(characters: CharacterSet.alphanumerics.inverted, strengthMatch: .symbol)
+        .contains(characters: CharacterSet.uppercaseLetters, strengthMatch: .uppercase)
+        .contains(characters: CharacterSet.decimalDigits, strengthMatch: .number).build()
     
     print("The strenght of your password '\(password)' is: \(passwordAnalysis.strength)")
     
@@ -67,35 +72,17 @@ class PasswordCheckerBuilder
         strengthMatch = initialStrengthMatch
     }
     
-    func isPasswordLongEnough(limit: Int) -> PasswordCheckerBuilder {
+    func isPasswordLongEnough(limit: Int, strengthMatch: StrengthMatches) -> PasswordCheckerBuilder {
         if password.characters.count >= limit {
-            strengthMatch.insert(.length)
+            self.strengthMatch.insert(strengthMatch)
             strength = Strength(rawValue: strength.rawValue + 1)!
         }
         return self
     }
     
-    func containsSymbol() -> PasswordCheckerBuilder {
-        let alphanumerics = CharacterSet.alphanumerics
-        
-        if password.rangeOfCharacter(from: alphanumerics.inverted) != nil {
-            strengthMatch.insert(.symbol)
-            strength = Strength(rawValue: strength.rawValue + 1)!
-        }
-        return self
-    }
-    
-    func containsUppercase() -> PasswordCheckerBuilder {
-        if password.rangeOfCharacter(from: CharacterSet.uppercaseLetters) != nil {
-            strengthMatch.insert(.uppercase)
-            strength = Strength(rawValue: strength.rawValue + 1)!
-        }
-        return self
-    }
-    
-    func containsNumber() -> PasswordCheckerBuilder {
-        if password.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil {
-            strengthMatch.insert(.number)
+    func contains(characters charSet: CharacterSet, strengthMatch: StrengthMatches) -> PasswordCheckerBuilder {
+        if password.rangeOfCharacter(from: charSet) != nil {
+            self.strengthMatch.insert(strengthMatch)
             strength = Strength(rawValue: strength.rawValue + 1)!
         }
         return self
@@ -107,7 +94,7 @@ class PasswordCheckerBuilder
 }
 
 
-checkPasswordWithBuilder("test1")
+checkPasswordWithBuilder("test")
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
